@@ -2,644 +2,550 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Rock Paper Scissors - Blockchain</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Blockchain RPS</title>
+<script src="https://cdn.jsdelivr.net/npm/ethers@6.15.0/dist/ethers.umd.min.js"></script>
 
-  <script src="https://cdn.jsdelivr.net/npm/ethers@6.15.0/dist/ethers.umd.min.js"></script>
+<style>
+* { box-sizing: border-box; }
 
-  <style>
-    * { box-sizing: border-box; }
+body {
+  background: #101827;
+  color: white;
+  font-family: Arial, sans-serif;
+  padding: 20px;
+  margin: 0;
+}
 
-    body {
-      font-family: Arial, sans-serif;
-      background: #101827;
-      color: white;
-      margin: 0;
-      padding: 25px 15px;
-    }
+.container {
+  max-width: 700px;
+  margin: auto;
+}
 
-    .container {
-      max-width: 720px;
-      margin: auto;
-    }
+h1 { text-align: center; }
 
-    h1 { text-align: center; }
+.subtitle {
+  text-align: center;
+  color: #94a3b8;
+}
 
-    .subtitle {
-      text-align: center;
-      color: #a5b4c8;
-    }
+.card {
+  background: #1e293b;
+  border-radius: 14px;
+  padding: 20px;
+  margin: 18px 0;
+}
 
-    .card {
-      background: #1e293b;
-      border: 1px solid #334155;
-      border-radius: 15px;
-      padding: 22px;
-      margin-top: 20px;
-    }
+input {
+  background: #0f172a;
+  color: white;
+  border: 1px solid #475569;
+  border-radius: 8px;
+  padding: 12px;
+  width: 100%;
+  margin: 10px 0;
+}
 
-    input {
-      width: 100%;
-      padding: 13px;
-      border: 1px solid #475569;
-      border-radius: 8px;
-      background: #0f172a;
-      color: white;
-      margin: 10px 0;
-    }
+button {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 9px;
+  padding: 13px;
+  cursor: pointer;
+  font-size: 15px;
+}
 
-    button {
-      padding: 13px 18px;
-      border: 0;
-      border-radius: 9px;
-      background: #3b82f6;
-      color: white;
-      cursor: pointer;
-      font-size: 15px;
-    }
+button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
 
-    button:hover:not(:disabled) {
-      background: #2563eb;
-    }
+.full {
+  width: 100%;
+  margin-top: 10px;
+}
 
-    button:disabled {
-      opacity: 0.45;
-      cursor: not-allowed;
-    }
+.choices {
+  display: flex;
+  gap: 10px;
+  margin: 20px 0;
+}
 
-    .full {
-      width: 100%;
-      margin-top: 10px;
-    }
+.choice {
+  flex: 1;
+  background: #334155;
+  border: 2px solid transparent;
+}
 
-    .choices {
-      display: flex;
-      gap: 12px;
-      margin: 20px 0;
-    }
+.choice span {
+  display: block;
+  font-size: 35px;
+}
 
-    .choice {
-      flex: 1;
-      background: #334155;
-      border: 2px solid transparent;
-      font-size: 16px;
-    }
+.choice.selected {
+  background: #1d4ed8;
+  border-color: #93c5fd;
+}
 
-    .choice span {
-      display: block;
-      font-size: 38px;
-      margin-bottom: 8px;
-    }
+.actions {
+  display: flex;
+  gap: 10px;
+}
 
-    .choice.selected {
-      border-color: #60a5fa;
-      background: #1d4ed8;
-    }
+.actions button { flex: 1; }
 
-    .actions {
-      display: flex;
-      gap: 12px;
-    }
+.status {
+  background: #0f172a;
+  color: #93c5fd;
+  padding: 14px;
+  border-radius: 8px;
+  margin-top: 15px;
+  overflow-wrap: anywhere;
+}
 
-    .actions button { flex: 1; }
+.error { color: #fca5a5; }
 
-    .status {
-      background: #0f172a;
-      padding: 15px;
-      border-radius: 9px;
-      margin-top: 15px;
-      color: #93c5fd;
-      overflow-wrap: anywhere;
-    }
+.players {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
 
-    .error { color: #fca5a5; }
+.player {
+  background: #0f172a;
+  border-radius: 8px;
+  padding: 15px;
+  overflow-wrap: anywhere;
+}
 
-    .players {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
+.muted {
+  color: #94a3b8;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
 
-    .player {
-      background: #0f172a;
-      padding: 15px;
-      border-radius: 9px;
-      overflow-wrap: anywhere;
-    }
+#result {
+  font-size: 25px;
+  color: #4ade80;
+  text-align: center;
+  font-weight: bold;
+  margin: 20px 0;
+}
 
-    .muted {
-      color: #a5b4c8;
-      font-size: 14px;
-    }
+#newGame { background: #16a34a; }
 
-    #result {
-      text-align: center;
-      font-size: 25px;
-      color: #4ade80;
-      font-weight: bold;
-      margin: 20px 0;
-    }
-
-    #newGame {
-      background: #16a34a;
-    }
-
-    @media (max-width: 480px) {
-      .choices { gap: 6px; }
-      .choice { padding: 12px 4px; }
-      .actions { flex-direction: column; }
-    }
-  </style>
+@media (max-width: 450px) {
+  .actions { flex-direction: column; }
+  .choice { padding: 10px 3px; }
+}
+</style>
 </head>
 
 <body>
 <div class="container">
 
-  <h1>Rock Paper Scissors</h1>
-  <p class="subtitle">Blockchain Game | Sepolia Testnet</p>
+<h1>✊ ✋ ✌️ Rock Paper Scissors</h1>
+<p class="subtitle">Blockchain Game | Sepolia Testnet</p>
 
-  <div class="card">
-    <h2>1. Connect Wallet</h2>
+<div class="card">
+  <h2>1. Connect Wallet</h2>
 
-    <button id="connect" class="full">
-      Connect MetaMask
+  <button class="full" id="connect">
+    Connect MetaMask
+  </button>
+
+  <p id="wallet" class="muted">Not connected</p>
+
+  <input id="address"
+    placeholder="Enter RPS contract address">
+
+  <button class="full" id="load">Load Game</button>
+</div>
+
+<div class="card">
+  <h2>2. Choose Your Move</h2>
+  <h3 id="round">Round: -</h3>
+
+  <div class="choices">
+    <button class="choice" data-move="1">
+      <span>✊</span>Rock
     </button>
-
-    <p id="wallet" class="muted">
-      Wallet not connected
-    </p>
-
-    <input
-      id="address"
-      placeholder="Enter RPS contract address"
-    >
-
-    <button id="load" class="full">
-      Load Game
+    <button class="choice" data-move="2">
+      <span>✋</span>Paper
     </button>
-  </div>
-
-  <div class="card">
-    <h2>2. Choose Your Move</h2>
-
-    <h3 id="round">Round: -</h3>
-
-    <div class="choices">
-      <button class="choice" data-move="1">
-        <span>✊</span>Rock
-      </button>
-
-      <button class="choice" data-move="2">
-        <span>✋</span>Paper
-      </button>
-
-      <button class="choice" data-move="3">
-        <span>✌️</span>Scissors
-      </button>
-    </div>
-
-    <div class="actions">
-      <button id="commit" disabled>
-        Commit Move
-      </button>
-
-      <button id="reveal" disabled>
-        Reveal Move
-      </button>
-    </div>
-
-    <div id="message" class="status">
-      Connect MetaMask and load the game.
-    </div>
-  </div>
-
-  <div class="card">
-    <h2>3. Game Status</h2>
-
-    <div class="players">
-      <div class="player">
-        <h3>Player 1</h3>
-        <p id="p1">Waiting</p>
-      </div>
-
-      <div class="player">
-        <h3>Player 2</h3>
-        <p id="p2">Waiting</p>
-      </div>
-    </div>
-
-    <p>Your role: <b id="role">-</b></p>
-    <p>Stage: <b id="stage">-</b></p>
-
-    <div id="result"></div>
-
-    <button id="refresh" class="full">
-      Refresh Status
-    </button>
-
-    <button id="newGame" class="full" hidden>
-      New Game
+    <button class="choice" data-move="3">
+      <span>✌️</span>Scissors
     </button>
   </div>
+
+  <div class="actions">
+    <button id="commit" disabled>Commit Move</button>
+    <button id="reveal" disabled>Reveal Move</button>
+  </div>
+
+  <div id="message" class="status">
+    Connect MetaMask and load the game.
+  </div>
+</div>
+
+<div class="card">
+  <h2>3. Game Status</h2>
+
+  <div class="players">
+    <div class="player">
+      <h3>Player 1</h3>
+      <p id="p1">Waiting</p>
+    </div>
+    <div class="player">
+      <h3>Player 2</h3>
+      <p id="p2">Waiting</p>
+    </div>
+  </div>
+
+  <p>Your role: <b id="role">-</b></p>
+  <p>Stage: <b id="stage">-</b></p>
+  <div id="result"></div>
+
+  <button class="full" id="refresh">
+    Refresh Status
+  </button>
+
+  <button class="full" id="newGame" hidden>
+    New Game
+  </button>
+</div>
 
 </div>
 
 <script>
-  const ABI = [
-    "function player1() view returns (address)",
-    "function player2() view returns (address)",
-    "function round() view returns (uint256)",
-    "function commits(uint256,address) view returns (bytes32)",
-    "function revealed(uint256,address) view returns (bool)",
-    "function result() view returns (string)",
-    "function commitMove(bytes32)",
-    "function revealMove(uint8,string)",
-    "function newGame()"
-  ];
+const ABI = [
+  "function player1() view returns (address)",
+  "function player2() view returns (address)",
+  "function round() view returns (uint256)",
+  "function players(uint256,address) view returns (bytes32 hash,uint8 move,bool revealed)",
+  "function result() view returns (string)",
+  "function commitMove(bytes32)",
+  "function revealMove(uint8,string)",
+  "function newGame()"
+];
 
-  const $ = id => document.getElementById(id);
+const $ = id => document.getElementById(id);
 
-  let provider;
-  let signer;
-  let account;
-  let contract;
-  let currentRound = 0;
-  let selectedMove = 0;
-  let busy = false;
+let provider, signer, account, contract;
+let currentRound = 0;
+let selectedMove = 0;
+let busy = false;
 
-  const ZERO = ethers.ZeroAddress;
+function show(text, error = false) {
+  $("message").textContent = text;
+  $("message").className = "status" + (error ? " error" : "");
+}
 
-  function show(text, error = false) {
-    $("message").textContent = text;
-    $("message").className =
-      "status" + (error ? " error" : "");
-  }
+function shortAddr(a) {
+  if (!a || a === ethers.ZeroAddress) return "Waiting";
+  return a.slice(0, 6) + "..." + a.slice(-4);
+}
 
-  function shortAddress(address) {
-    if (!address || address === ZERO) return "Waiting";
-    return address.slice(0, 6) + "..." + address.slice(-4);
-  }
+function secretKey(r) {
+  return "rps:" + contract.target.toLowerCase()
+    + ":" + account.toLowerCase() + ":" + r;
+}
 
-  function secretKey(round) {
-    return "rps:" +
-      contract.target.toLowerCase() + ":" +
-      account.toLowerCase() + ":" +
-      round;
-  }
-
-  function getSecret() {
-    try {
-      return JSON.parse(
-        localStorage.getItem(secretKey(currentRound))
-      );
-    } catch {
-      return null;
-    }
-  }
-
-  function setButtons(commit, reveal) {
-    $("commit").disabled = busy || !commit;
-    $("reveal").disabled = busy || !reveal;
-  }
-
-  async function connectWallet() {
-    if (!window.ethereum) {
-      throw new Error("Please install MetaMask.");
-    }
-
-    provider = new ethers.BrowserProvider(window.ethereum);
-
-    await provider.send("eth_requestAccounts", []);
-
-    const network = await provider.getNetwork();
-
-    if (network.chainId !== 11155111n) {
-      throw new Error("Switch MetaMask to Sepolia.");
-    }
-
-    signer = await provider.getSigner();
-    account = await signer.getAddress();
-
-    $("wallet").textContent = "Wallet: " + account;
-
-    show("Wallet connected.");
-
-    if ($("address").value.trim()) {
-      await loadGame();
-    }
-  }
-
-  async function loadGame() {
-    if (!signer) {
-      throw new Error("Connect MetaMask first.");
-    }
-
-    const address = $("address").value.trim();
-
-    if (!ethers.isAddress(address)) {
-      throw new Error("Invalid contract address.");
-    }
-
-    const game = new ethers.Contract(
-      address,
-      ABI,
-      signer
+function getSecret() {
+  try {
+    return JSON.parse(
+      localStorage.getItem(secretKey(currentRound))
     );
+  } catch {
+    return null;
+  }
+}
 
-    // Verify that the contract supports rounds.
-    await game.round();
-    await game.player1();
+function buttons(commitAllowed, revealAllowed) {
+  $("commit").disabled = busy || !commitAllowed;
+  $("reveal").disabled = busy || !revealAllowed;
+}
 
-    contract = game;
-
-    localStorage.setItem("rps-address", address);
-
-    show("Game loaded.");
-
-    await refreshGame();
+async function connectWallet() {
+  if (!window.ethereum) {
+    throw new Error("MetaMask is not installed.");
   }
 
-  async function refreshGame() {
-    if (!contract || !account) return;
+  provider = new ethers.BrowserProvider(window.ethereum);
+  await provider.send("eth_requestAccounts", []);
 
-    const round = await contract.round();
-    currentRound = Number(round);
+  const network = await provider.getNetwork();
+  if (network.chainId !== 11155111n) {
+    throw new Error("Switch MetaMask to Sepolia.");
+  }
 
-    const p1 = await contract.player1();
-    const p2 = await contract.player2();
-    const result = await contract.result();
+  signer = await provider.getSigner();
+  account = await signer.getAddress();
 
-    const [hash1, hash2, revealed1, revealed2] =
-      await Promise.all([
-        contract.commits(round, p1),
-        contract.commits(round, p2),
-        contract.revealed(round, p1),
-        contract.revealed(round, p2)
-      ]);
+  $("wallet").textContent = "Wallet: " + account;
+  show("Wallet connected.");
 
-    const committed1 = hash1 !== ethers.ZeroHash;
-    const committed2 = hash2 !== ethers.ZeroHash;
+  if ($("address").value.trim()) {
+    await loadGame();
+  }
+}
 
-    const isP1 =
-      p1.toLowerCase() === account.toLowerCase();
+async function loadGame() {
+  if (!signer) throw new Error("Connect MetaMask first.");
 
-    const isP2 =
-      p2.toLowerCase() === account.toLowerCase();
+  const address = $("address").value.trim();
 
-    const myCommitted =
-      isP1 ? committed1 :
-      isP2 ? committed2 : false;
+  if (!ethers.isAddress(address)) {
+    throw new Error("Invalid contract address.");
+  }
 
-    const myRevealed =
-      isP1 ? revealed1 :
-      isP2 ? revealed2 : false;
+  const code = await provider.getCode(address);
+  if (code === "0x") {
+    throw new Error("No contract found at this address on Sepolia.");
+  }
 
-    const finished = result.length > 0;
-    const bothCommitted = committed1 && committed2;
+  const game = new ethers.Contract(address, ABI, signer);
 
-    const canJoin =
-      isP1 || isP2 || p2 === ZERO;
+  // Check compatibility with the simplified contract.
+  const r = await game.round();
+  const p1 = await game.player1();
+  await game.players(r, p1);
 
-    const secret = getSecret();
+  contract = game;
+  localStorage.setItem("rps-address", address);
 
-    $("round").textContent = "Round: " + currentRound;
+  selectedMove = 0;
+  document.querySelectorAll(".choice").forEach(
+    b => b.classList.remove("selected")
+  );
 
-    $("p1").textContent =
-      shortAddress(p1) + " | " +
-      (revealed1 ? "Revealed" :
-       committed1 ? "Committed" : "Waiting");
+  show("Game loaded.");
+  await refreshGame();
+}
 
-    $("p2").textContent =
-      shortAddress(p2) + " | " +
-      (revealed2 ? "Revealed" :
-       committed2 ? "Committed" : "Waiting");
+async function refreshGame() {
+  if (!contract || !account) return;
 
-    $("role").textContent =
-      isP1 ? "Player 1" :
-      isP2 ? "Player 2" :
-      p2 === ZERO ? "Potential Player 2" :
-      "Spectator";
+  const r = await contract.round();
+  const newRound = Number(r);
 
-    $("stage").textContent =
-      finished ? "Finished" :
-      bothCommitted ? "Reveal Phase" :
-      "Commit Phase";
+  if (newRound !== currentRound) {
+    selectedMove = 0;
+    document.querySelectorAll(".choice").forEach(
+      b => b.classList.remove("selected")
+    );
+  }
 
-    $("result").textContent = result;
+  currentRound = newRound;
 
-    setButtons(
-      !finished &&
-      !myCommitted &&
-      canJoin &&
+  const p1 = await contract.player1();
+  const p2 = await contract.player2();
+  const result = await contract.result();
+
+  const [data1, data2] = await Promise.all([
+    contract.players(r, p1),
+    contract.players(r, p2)
+  ]);
+
+  const c1 = data1.hash !== ethers.ZeroHash;
+  const c2 = data2.hash !== ethers.ZeroHash;
+
+  const r1 = data1.revealed;
+  const r2 = data2.revealed;
+
+  const isP1 = p1.toLowerCase() === account.toLowerCase();
+  const isP2 = p2.toLowerCase() === account.toLowerCase();
+
+  const myCommitted = isP1 ? c1 : isP2 ? c2 : false;
+  const myRevealed = isP1 ? r1 : isP2 ? r2 : false;
+
+  const finished = result.length > 0;
+  const bothCommitted = c1 && c2;
+  const canJoin = isP1 || isP2 || p2 === ethers.ZeroAddress;
+
+  const secret = getSecret();
+
+  $("round").textContent = "Round: " + currentRound;
+
+  $("p1").textContent =
+    shortAddr(p1) + " | " +
+    (r1 ? "Revealed" : c1 ? "Committed" : "Waiting");
+
+  $("p2").textContent =
+    shortAddr(p2) + " | " +
+    (r2 ? "Revealed" : c2 ? "Committed" : "Waiting");
+
+  $("role").textContent =
+    isP1 ? "Player 1" :
+    isP2 ? "Player 2" :
+    p2 === ethers.ZeroAddress ? "Potential Player 2" :
+    "Spectator";
+
+  $("stage").textContent =
+    finished ? "Finished" :
+    bothCommitted ? "Reveal Phase" :
+    "Commit Phase";
+
+  $("result").textContent = result;
+
+  buttons(
+    !finished && !myCommitted && canJoin &&
       selectedMove !== 0,
 
-      !finished &&
-      bothCommitted &&
-      myCommitted &&
-      !myRevealed &&
-      !!secret
-    );
+    !finished && bothCommitted &&
+      myCommitted && !myRevealed && !!secret
+  );
 
-    // Only Player 1 can start a new round.
-    $("newGame").hidden = !finished || !isP1;
-    $("newGame").disabled = busy;
+  $("newGame").hidden = !finished || !isP1;
+  $("newGame").disabled = busy;
 
-    if (finished) {
-      show("Game finished. " + result);
-    } else if (myCommitted && !myRevealed && !secret) {
-      show(
-        "Move committed, but saved secret was not found.",
-        true
-      );
-    } else if (bothCommitted && !myRevealed) {
-      show("Both players committed. Reveal your move.");
-    } else if (myRevealed) {
-      show("Move revealed. Waiting for the other player.");
-    } else if (myCommitted) {
-      show("Move committed. Waiting for the other player.");
-    } else {
-      show("Choose your move and press Commit.");
-    }
+  if (finished) {
+    show("Game finished: " + result);
+  } else if (myCommitted && !myRevealed && !secret) {
+    show("Saved secret not found for this move.", true);
+  } else if (myRevealed) {
+    show("Move revealed. Waiting for other player.");
+  } else if (bothCommitted) {
+    show("Both players committed. Reveal your move.");
+  } else if (myCommitted) {
+    show("Move committed. Waiting for other player.");
+  } else {
+    show("Choose a move and press Commit.");
   }
+}
 
-  async function commitMove() {
-    if (!contract) throw new Error("Load game first.");
-    if (!selectedMove) throw new Error("Choose a move.");
+async function commitMove() {
+  if (!contract) throw new Error("Load game first.");
+  if (!selectedMove) throw new Error("Choose a move.");
 
-    const saltBytes = new Uint8Array(32);
-    crypto.getRandomValues(saltBytes);
-
-    const salt = ethers.hexlify(saltBytes);
-
-    const coder = ethers.AbiCoder.defaultAbiCoder();
-
-    // Must match Solidity abi.encode exactly.
-    const encoded = coder.encode(
-      ["address", "uint256", "address", "uint8", "string"],
-      [
-        contract.target,
-        currentRound,
-        account,
-        selectedMove,
-        salt
-      ]
-    );
-
-    const hash = ethers.keccak256(encoded);
-
-    // Save secret BEFORE sending the transaction.
-    localStorage.setItem(
-      secretKey(currentRound),
-      JSON.stringify({
-        move: selectedMove,
-        salt: salt
-      })
-    );
-
-    show("Confirm Commit in MetaMask...");
-
-    const tx = await contract.commitMove(hash);
-
-    show("Waiting for transaction confirmation...");
-
-    await tx.wait();
-
-    show("Move committed successfully!");
-  }
-
-  async function revealMove() {
-    const secret = getSecret();
-
-    if (!secret) {
-      throw new Error("Saved move or salt not found.");
-    }
-
-    show("Confirm Reveal in MetaMask...");
-
-    const tx = await contract.revealMove(
-      secret.move,
-      secret.salt
-    );
-
-    show("Waiting for transaction confirmation...");
-
-    await tx.wait();
-
-    // Only delete after successful reveal.
-    localStorage.removeItem(secretKey(currentRound));
-
-    show("Move revealed successfully!");
-  }
-
-  async function newGame() {
-    if (!contract) throw new Error("Load game first.");
-
-    show("Confirm New Game in MetaMask...");
-
-    const tx = await contract.newGame();
-
-    show("Starting new round...");
-
-    await tx.wait();
-
-    selectedMove = 0;
-
-    document.querySelectorAll(".choice").forEach(
-      button => button.classList.remove("selected")
-    );
-
-    show("New round started!");
-
+  const roundOnChain = Number(await contract.round());
+  if (roundOnChain !== currentRound) {
     await refreshGame();
+    throw new Error("Round changed. Choose your move again.");
   }
 
-  async function run(action) {
-    if (busy) return;
+  const bytes = new Uint8Array(32);
+  crypto.getRandomValues(bytes);
+  const salt = ethers.hexlify(bytes);
 
-    busy = true;
-    setButtons(false, false);
-    $("newGame").disabled = true;
+  const coder = ethers.AbiCoder.defaultAbiCoder();
+  const encoded = coder.encode(
+    ["address", "uint256", "address", "uint8", "string"],
+    [contract.target, currentRound, account, selectedMove, salt]
+  );
 
-    try {
-      await action();
-    } catch (error) {
-      show(
-        error.shortMessage ||
-        error.reason ||
-        error.message,
-        true
-      );
-    } finally {
-      busy = false;
+  const hash = ethers.keccak256(encoded);
 
-      if (contract) {
-        try {
-          await refreshGame();
-        } catch (error) {
-          show(error.message, true);
-        }
+  localStorage.setItem(
+    secretKey(currentRound),
+    JSON.stringify({ move: selectedMove, salt })
+  );
+
+  show("Confirm Commit in MetaMask...");
+
+  const tx = await contract.commitMove(hash);
+  show("Waiting for confirmation...");
+  await tx.wait();
+
+  show("Move committed successfully!");
+}
+
+async function revealMove() {
+  if (!contract) throw new Error("Load game first.");
+
+  const secret = getSecret();
+  if (!secret) throw new Error("Saved secret not found.");
+
+  show("Confirm Reveal in MetaMask...");
+
+  const tx = await contract.revealMove(
+    secret.move,
+    secret.salt
+  );
+
+  show("Waiting for confirmation...");
+  await tx.wait();
+
+  localStorage.removeItem(secretKey(currentRound));
+  show("Move revealed successfully!");
+}
+
+async function startNewGame() {
+  if (!contract) throw new Error("Load game first.");
+
+  show("Confirm New Game in MetaMask...");
+  const tx = await contract.newGame();
+  show("Starting new round...");
+  await tx.wait();
+
+  selectedMove = 0;
+  document.querySelectorAll(".choice").forEach(
+    b => b.classList.remove("selected")
+  );
+
+  await refreshGame();
+}
+
+async function run(action) {
+  if (busy) return;
+
+  busy = true;
+  buttons(false, false);
+  $("newGame").disabled = true;
+
+  try {
+    await action();
+  } catch (e) {
+    show(e.shortMessage || e.reason || e.message, true);
+  } finally {
+    busy = false;
+    if (contract) {
+      try {
+        await refreshGame();
+      } catch (e) {
+        show(e.shortMessage || e.message, true);
       }
     }
   }
+}
 
-  document.querySelectorAll(".choice").forEach(
-    button => {
-      button.onclick = async () => {
-        selectedMove = Number(button.dataset.move);
+document.querySelectorAll(".choice").forEach(b => {
+  b.onclick = () => {
+    selectedMove = Number(b.dataset.move);
 
-        document.querySelectorAll(".choice").forEach(
-          item => item.classList.toggle(
-            "selected",
-            item === button
-          )
-        );
-
-        if (contract) {
-          await refreshGame();
-        }
-      };
-    }
-  );
-
-  $("connect").onclick =
-    () => run(connectWallet);
-
-  $("load").onclick =
-    () => run(loadGame);
-
-  $("commit").onclick =
-    () => run(commitMove);
-
-  $("reveal").onclick =
-    () => run(revealMove);
-
-  $("newGame").onclick =
-    () => run(newGame);
-
-  $("refresh").onclick =
-    () => run(refreshGame);
-
-  $("address").value =
-    localStorage.getItem("rps-address") || "";
-
-  if (window.ethereum) {
-    window.ethereum.on("accountsChanged", () => {
-      account = null;
-      signer = null;
-      contract = null;
-
-      $("wallet").textContent = "Wallet not connected";
-      setButtons(false, false);
-
-      show("Account changed. Connect MetaMask again.");
+    document.querySelectorAll(".choice").forEach(x => {
+      x.classList.toggle("selected", x === b);
     });
 
-    window.ethereum.on("chainChanged", () => {
-      location.reload();
-    });
-  }
+    if (contract) refreshGame().catch(e => show(e.message, true));
+  };
+});
+
+$("connect").onclick = () => run(connectWallet);
+$("load").onclick = () => run(loadGame);
+$("commit").onclick = () => run(commitMove);
+$("reveal").onclick = () => run(revealMove);
+$("newGame").onclick = () => run(startNewGame);
+$("refresh").onclick = () => run(refreshGame);
+
+$("address").value =
+  localStorage.getItem("rps-address") || "";
+
+if (window.ethereum) {
+  window.ethereum.on("accountsChanged", () => {
+    account = null;
+    signer = null;
+    contract = null;
+    buttons(false, false);
+    $("newGame").hidden = true;
+    $("wallet").textContent = "Not connected";
+    show("Account changed. Connect MetaMask again.");
+  });
+
+  window.ethereum.on("chainChanged", () => location.reload());
+}
 </script>
-
 </body>
 </html>
